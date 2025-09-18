@@ -35,5 +35,5 @@ commit_parser = "conventional"
 version_toml = ["pyproject.toml:project.version"]
 allow_zero_version = true
 upload_to_release = true
-changelog_file = ""  # disable CHANGELOG.md updates
+changelog_file = false
 build_command = ""   # disable building wheel/sdist
