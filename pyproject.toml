@@ -22,16 +22,18 @@ create-data-product = "scripts.create_data_product:main"
 
 [tool.uv]
 package = true
-dev-dependencies = [
+
+[dependency-groups]
+dev = [
     "pytest>=7.0.0",
     "pre-commit>=4.3.0",
     "python-semantic-release>=10.4.0"
 ]
 
 [tool.semantic_release]
-commit_parser= "conventional"
+commit_parser = "conventional"
 version_toml = ["pyproject.toml:project.version"]
 allow_zero_version = true
-
-[tool.semantic_release.changelog.default_templates]
-changelog_file = "CHANGELOG.md"
+upload_to_release = true
+changelog_file = ""  # disable CHANGELOG.md updates
+build_command = ""   # disable building wheel/sdist
