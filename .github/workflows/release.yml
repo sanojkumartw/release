@@ -34,15 +34,13 @@ jobs:
 
       - name: Ensure initial tag exists
         run: |
-          if ! git describe --tags --abbrev=0 >/dev/null 2>&1; then
-            echo "No tags found, bootstrapping initial tag"
-            VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
-            echo "Found version $VERSION in pyproject.toml"
-            git tag "v$VERSION"
-            git push origin "v$VERSION"
-          else
+           if ! git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            echo "No tags found, creating baseline tag v0.0.0"
+            git tag "v0.0.0"
+            git push origin "v0.0.0"
+           else
             echo "Tag already exists, skipping..."
-          fi
+           fi
 
           
       - name: Run semantic-release
