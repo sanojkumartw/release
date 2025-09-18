@@ -1,0 +1,40 @@
+name: Destroy pipeline on Databricks
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Environment name. e.g: dev or prod'
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    env:
+      # Databricks Service Principal Client ID
+      DATABRICKS_CLIENT_ID: "{% raw %} ${{ secrets.DATABRICKS_CLIENT_ID }} {% endraw %}"
+      # Databricks Workspace URL
+      DATABRICKS_HOST:  "{% raw %} ${{ vars.DATABRICKS_HOST_VAR }} {% endraw %}"
+      # ID of Databricks service principal
+      BUNDLE_VAR_SERVICE_PRINCIPAL_ID: "{% raw %} ${{ vars.SERVICE_PRINCIPAL_ID_VAR }} {% endraw %}"
+      BUNDLE_VAR_RAW_DATA_S3_BUCKET: "{% raw %} ${{ vars.RAW_DATA_S3_BUCKET_VAR }} {% endraw %}"
+      DATABRICKS_AUTH_TYPE: github-oidc
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Databricks CLI
+        uses: databricks/setup-cli@v0.262.0
+
+      - name: Destroy Databricks Asset bundle pipeline
+        run: databricks bundle destroy --auto-approve --target {% raw %} ${{ github.event.inputs.target_environment }} {% endraw %}

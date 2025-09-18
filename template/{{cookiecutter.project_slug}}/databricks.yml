@@ -1,0 +1,68 @@
+# This is a Databricks asset bundle definition for test.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: "{{ cookiecutter.project_slug }}"
+
+variables:
+  SERVICE_PRINCIPAL_ID:
+    description: "Service principal's application ID"
+  RAW_DATA_S3_BUCKET:
+    description: "S3 bucket for raw data"
+
+permissions:
+  - service_principal_name: ${var.SERVICE_PRINCIPAL_ID}
+    level: CAN_MANAGE
+
+artifacts:
+  python_artifact:
+    type: whl
+    build: uv build --wheel
+
+include:
+  - resources/workflows/*.yml
+
+targets:
+  dev:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: development
+    default: true
+    # Host will be taken from env variable, set export DATABRICKS_HOST=<workspace_url>
+
+
+    presets:
+      # Set dynamic_version: true on all artifacts of type "whl".
+      # This makes "bundle deploy" add a timestamp to wheel's version before uploading,
+      # new wheel takes over the previous installation even if actual wheel version is unchanged.
+      # See https://docs.databricks.com/aws/en/dev-tools/bundles/settings
+      artifacts_dynamic_version: true
+      jobs_max_concurrent_runs: 1
+      name_prefix: ${workspace.current_user.short_name}_
+      pipelines_development: true
+      tags:
+        env: ${bundle.target}
+        data_product_name: {{ cookiecutter.project_slug }}
+        data_product_id: {{ cookiecutter.project_slug }}
+        domain: {{ cookiecutter.data_product_id }}
+        # owner: data_team
+        # cost_center: data_engineering
+        # data_classification: internal
+
+
+
+  prod:
+    mode: production
+    workspace:
+      # Host will be taken from env variable, set export DATABRICKS_HOST=<workspace_url>
+      root_path: /Workspace/Users/${var.SERVICE_PRINCIPAL_ID}/.bundle/${bundle.name}/${bundle.target}
+    presets:
+      name_prefix: 'production_'
+      tags:
+        env: ${bundle.target}
+        data_product_name: {{ cookiecutter.project_slug }}
+        data_product_id: {{ cookiecutter.project_slug }}
+        domain: {{ cookiecutter.data_product_id }}
+        # owner: data_team
+        # cost_center: data_engineering
+        # data_classification: internal

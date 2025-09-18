@@ -1,0 +1,71 @@
+name: Update Data Product from Template
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # Every Monday at 6 AM UTC
+  workflow_dispatch:
+
+jobs:
+  updateDataProduct:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: "{% raw %}${{ secrets.GH_TOKEN }}{% endraw %}"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Configure git so cruft can access private repos
+      - name: Configure git authentication
+        run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Commit uv.lock after sync
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions Bot"
+          git add uv.lock
+          git commit -m "chore: sync uv.lock" || echo "No changes to commit"
+
+      - name: Check if update is available
+        id: check
+        run: |
+          if [ -f .cruft.json ]; then
+            if uv run cruft check; then
+              echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "No .cruft.json file found"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run cruft update
+        if: steps.check.outputs.has_changes == 'true'
+        run: |
+          uv run cruft update --skip-apply-ask
+
+      - name: Create pull request
+        if: steps.check.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: "{% raw %}${{ secrets.GH_TOKEN }}{% endraw %}"
+          commit-message: "chore: update data product from template"
+          branch: update-template
+          delete-branch: true
+          title: "chore: update data product from template"
+          body: |
+            This PR updates the data product with the latest template changes.
+            [Cruft](https://cruft.github.io/cruft/) detected updates from the Cookiecutter template.
+          labels: |
+            template-update
+            automated-pr

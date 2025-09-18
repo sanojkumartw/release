@@ -1,0 +1,104 @@
+#file: noinspection YAMLSchemaValidation
+# nonk8s
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: data-as-a-product
+  title: DaaP Pipeline Template
+  description: |
+    This accelerator provides a comprehensive Data as a Product solution leveraging Databricks. 
+    It is designed to help you quickly scaffold new data products using Cookiecutter and Cruft, 
+    ensuring project consistency it uses Python as a language for all data transformation and analysis tasks.
+    The accelerator includes reusable Terraform modules to provision
+    workspaces, compute, and Unity Catalog, ensuring a consistent and scalable environment. 
+    The solution also features automated CI/CD pipelines using GitHub Actions, which streamline 
+    the deployment of data products.
+  tags:
+    - daap-accelerator
+    - data-product
+    - databricks
+    - pipeline
+    - python
+    - data-modernization
+spec:
+  owner: data-platform
+  type: service
+  parameters:
+    - title: Prerequisites Check
+      description: Before proceeding, please ensure you've completed the following.
+      required: [acknowledge]
+      properties:
+        acknowledge:
+          type: array
+          title: Please confirm the following setup is done
+          minItems: 1
+          items:
+            type: string
+            enum:
+              - "Got access to client github organisation to deploy the template?"
+          uniqueItems: true
+          ui:widget: checkboxes
+    - title: Fill in Data as a Product project information
+      required:
+        - data_product_name
+        - org_name
+        - description
+        - domain
+        - github_token
+      properties:
+        data_product_name:
+          type: string
+          title: data product name
+          description: 'Data product name (e.g., "Customer Analytics Pipeline")'
+        org_name:
+          type: string
+          title: Organization name
+          description: 'GitHub organization/user to create the repo under'
+        description:
+          type: string
+          title: description
+          description: 'Data product description'
+          default: "A Databricks data product generated with the TW Databricks data product accelerator template"
+        domain:
+          type: string
+          title: domain
+          description: 'Domain or team owning the data product'
+          default: "data team"
+        github_token:
+          type: string
+          title: GitHub Personal Access Token
+          description: 'GitHub Personal Access Token with repo and workflow permissions (will be masked)'
+          ui:field: Secret
+
+  steps:
+    - id: trigger-workflow
+      name: Trigger Bootstrap Workflow
+      action: github:actions:dispatch
+      input:
+        repoUrl: github.com?repo=tw-data-products-accelerator-template&owner=DATA-AI-Service-Line
+        workflowId: bootstrap-data-product.yml
+        branchOrTagName: main
+        token: ${{ secrets.github_token }}
+        workflowInputs:
+          data_product_name: ${{ parameters.data_product_name }}
+          org_name: ${{ parameters.org_name }}
+          description: ${{ parameters.description }}
+          domain: ${{ parameters.domain }}
+
+  output:
+    text:
+      - title: Workflow Triggered
+        content: |
+          The bootstrap workflow has been triggered successfully!
+          
+          **Data Product**: ${{ parameters.data_product_name }}
+          **Organization**: ${{ parameters.org_name }}
+          **Domain**: ${{ parameters.domain }}
+          
+          The workflow will create a new repository and set up your data product template.
+          The exact repository name will be generated and shown in the workflow logs.
+          Please check the workflow status and wait for completion.
+    links:
+      - title: Monitor Workflow Progress
+        url: https://github.com/DATA-AI-Service-Line/tw-data-products-accelerator-template/actions/workflows/bootstrap-data-product.yml
+        

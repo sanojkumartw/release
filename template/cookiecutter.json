@@ -1,0 +1,8 @@
+{
+  "project_name": "Data Product Sample",
+  "project_slug": "data-product-sample",
+  "domain": "data-engineering",
+  "description": "A Databricks data product generated with the TW Databricks data product accelerator template",
+  "data_product_id": "{{ uuid4() }}",
+  "creation_timestamp": "{% now 'utc', '%Y-%m-%dT%H:%M:%SZ' %}"
+}

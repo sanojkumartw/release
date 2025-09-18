@@ -1,0 +1,37 @@
+[project]
+name = "tw-data-products-accelerator-template"
+version = "0.1.0"
+description = "This repository provides a reusable, versioned template to scaffold standarized Databricks data products. It is built using Cookiecutter and Cruft, making it easy to generate, version, and upgrade your data products over time."
+
+requires-python = ">=3.12"
+dependencies = [
+    "cruft>=2.15.0",
+    "cookiecutter>=2.6.0",
+    "jupyter>=1.1.1",
+]
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["scripts"]
+
+[project.scripts]
+create-data-product = "scripts.create_data_product:main"
+
+[tool.uv]
+package = true
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "pre-commit>=4.3.0",
+    "python-semantic-release>=10.4.0"
+]
+
+[tool.semantic_release]
+commit_parser= "conventional"
+version_toml = ["pyproject.toml:project.version"]
+allow_zero_version = true
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"

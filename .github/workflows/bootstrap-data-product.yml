@@ -1,0 +1,121 @@
+name: Bootstrap New Data Product
+
+on:
+  workflow_dispatch:
+    inputs:
+      data_product_name:
+        description: 'Data product name (e.g., "Customer Analytics Pipeline")'
+        required: true
+        type: string
+      org_name:
+        description: 'GitHub organization/user to create the repo under'
+        required: true
+        type: string
+      description:
+        description: 'Data product description'
+        required: false
+        type: string
+        default: "A Databricks data product generated with the TW Databricks data product accelerator template"
+      domain:
+        description: 'Domain or team owning the data product'
+        required: false
+        type: string
+        default: "Data Team"
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      # Databricks Workspace URL
+      DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST_VAR }}
+      # Databricks Service Principal Client ID
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      # ID of Databricks service principal
+      SERVICE_PRINCIPAL_ID: ${{ vars.SERVICE_PRINCIPAL_ID_VAR }}
+      RAW_DATA_S3_BUCKET: ${{ vars.RAW_DATA_S3_BUCKET_VAR }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Install uv python package manager
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Install python dependencies
+        run: uv sync
+
+      - name: Scaffold project from template
+        id: scaffold
+        run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+          # Run the create-data-product command and capture output
+          OUTPUT=$(uv run create-data-product \
+            "${{ github.event.inputs.data_product_name }}" \
+            --template-path "https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }}" \
+            --checkout ${{ github.ref_name }} \
+            --domain "${{ github.event.inputs.domain }}" \
+            --description "${{ github.event.inputs.description }}" \
+            --org ${{ github.event.inputs.org_name }} \
+            --output-dir ./output)
+
+          echo "Raw OUTPUT:"
+          echo "$OUTPUT"
+          
+          # Extract project_slug and repo_name from output
+          PROJECT_SLUG=$(echo "$OUTPUT" | grep "^project_slug=" | cut -d'=' -f2)
+          REPO_NAME=$(echo "$OUTPUT" | grep "^repo_name=" | cut -d'=' -f2)
+
+          
+          echo "project_slug=${PROJECT_SLUG}" >> $GITHUB_OUTPUT
+          echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+          
+          echo "Generated project slug: ${PROJECT_SLUG}"
+          echo "Generated repo name: ${REPO_NAME}"
+
+      - name: Create New GitHub Repo
+        run: |
+          # Create repository with team access (read permissions by default)
+          gh repo create ${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }} \
+            --internal \
+            --team='data-products-accelerator' \
+            --description "${{ github.event.inputs.description }}"
+
+      - name: Add permissions to team
+        run: |
+          # Debug: Check if team exists and get its details
+          echo "Checking team details for: data-products-accelerator"
+          gh api /orgs/${{ github.event.inputs.org_name }}/teams/data-products-accelerator --jq '.name, .slug, .permission' || echo "Team not found or no access"
+          
+          # Grant team write permissions (--team flag only gives read by default)
+          # Using the correct team slug: data-products-accelerator
+          echo "Setting write permissions for team: data-products-accelerator"
+          echo "Repository: ${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }}"
+          gh api -X PUT \
+            /orgs/${{ github.event.inputs.org_name }}/teams/data-products-accelerator/repos/${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }} \
+            -f permission=push || echo "Warning: Failed to set team permissions. Repository created but team permissions need to be set manually."
+
+      - name: Set secrets in target repo
+        run: |
+          gh variable set DATABRICKS_HOST_VAR -b"$DATABRICKS_HOST" -R ${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }}
+          gh secret set DATABRICKS_CLIENT_ID -b"$DATABRICKS_CLIENT_ID" -R ${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }}
+          gh variable set SERVICE_PRINCIPAL_ID_VAR -b"$SERVICE_PRINCIPAL_ID" -R ${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }}
+          gh variable set RAW_DATA_S3_BUCKET_VAR -b"$RAW_DATA_S3_BUCKET" -R ${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }}
+          gh secret set GH_TOKEN -b"$GH_TOKEN" -R ${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }}
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions.user@github.com"
+
+      - name: Initialize & Push to New Repo
+        run: |
+          cd output/${{ steps.scaffold.outputs.project_slug }}
+          git init
+          git remote add origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.event.inputs.org_name }}/${{ steps.scaffold.outputs.repo_name }}.git
+          git add .
+          git commit -m "Initial commit from template: ${{ github.event.inputs.data_product_name }}"
+          git branch -M main
+          git push -u origin main

@@ -1,0 +1,18 @@
+{
+  "template": "/home/runner/work/tw-data-products-accelerator-template/tw-data-products-accelerator-template",
+  "commit": "4a8044b678aa291580eddf6a02c81812dcf63edf",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_name": "cust-analytics pipeline",
+      "project_slug": "cust_analytics_pipeline",
+      "domain": "Data Team",
+      "description": "A Databricks data product generated with the TW Databricks data product accelerator template",
+      "data_product_id": "9d8a4d05-f2be-4a21-9426-7cef2b7cbc0d",
+      "creation_timestamp": "2025-08-25T08:13:15Z",
+      "_template": "/home/runner/work/tw-data-products-accelerator-template/tw-data-products-accelerator-template",
+      "_commit": "4a8044b678aa291580eddf6a02c81812dcf63edf"
+    }
+  },
+  "directory": "template"
+}

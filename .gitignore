@@ -1,0 +1,10 @@
+.DS_Store
+.idea/
+.secrets
+__pycache__/
+.pytest_cache
+*.pyc
+.venv/
+tw_data_products_accelerator_template.egg-info/
+venv/
+*.egg-info

@@ -1,0 +1,8 @@
+{
+  "inputs": {
+    "repo_name": "daap-customer-dwh",
+    "org_name": "leo-daap",
+    "description": "Scaffolded repo",
+    "private": "true"
+  }
+}
