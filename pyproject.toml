@@ -46,9 +46,11 @@ major_on_zero = false
 changelog_file = "CHANGELOG.md"
 
 [tool.semantic_release.changelog.exclude_commit_patterns]
-- "^(?i:release|bump|version)"
-- "^(?i:chore|docs|style|refactor|test|ci)"
-- "^(?i:merge|pull|revert)"
+patterns = [
+    "^(?i:release|bump|version)",
+    "^(?i:chore|docs|style|refactor|test|ci)",
+    "^(?i:merge|pull|revert)"
+]
 
 [tool.semantic_release.changelog.commit_pattern]
-pattern = "^(?P<type>feat|fix|perf|refactor|style|docs|test|ci|build|chore|revert)(?:\((?P<scope>[^()]+)\))?(?P<breaking>!)?: (?P<description>[^\\n]+)"
+pattern = "^(?P<type>feat|fix|perf|refactor|style|docs|test|ci|build|chore|revert)(?:\\((?P<scope>[^()]+)\\))?(?P<breaking>!)?: (?P<description>[^\\n]+)"
