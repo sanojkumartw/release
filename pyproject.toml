@@ -1,6 +1,6 @@
 [project]
 name = "tw-data-products-accelerator-template"
-version = "0.1.0"
+version = "0.1.1"
 description = "This repository provides a reusable, versioned template to scaffold standarized Databricks data products. It is built using Cookiecutter and Cruft, making it easy to generate, version, and upgrade your data products over time."
 
 requires-python = ">=3.12"

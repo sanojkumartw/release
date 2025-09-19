@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v0.1.1 (2025-09-19)
+
+### Bug Fixes
+
+- Handle null in user service
+  ([`eb6cd30`](https://github.com/sanojkumartw/release/commit/eb6cd30c9a10b9ab18a0319646e336574e39f1c7))
+
+- Handle null new in user service
+  ([`110072b`](https://github.com/sanojkumartw/release/commit/110072be9a48146d0d75bcc95e6004ab7703d49f))
+
+- Handle nullify pointer in user service
+  ([`c85371b`](https://github.com/sanojkumartw/release/commit/c85371bd3d763c32a99eb4ff817b37780fbf1479))
+
+- Handle nullify pointer in user service
+  ([`d62d96a`](https://github.com/sanojkumartw/release/commit/d62d96a03196ca4e6aade1b6cf330b62c1bf2186))
+
+
 ## v0.1.0 (2025-09-19)
 
 ### Bug Fixes
@@ -10,6 +27,9 @@
 
 - Handle null pointer in user service
   ([`9492e3c`](https://github.com/sanojkumartw/release/commit/9492e3c427ab030a2e2ff7ce2fa4786793394fd0))
+
+- Handle nullify pointer in user service
+  ([`5f28512`](https://github.com/sanojkumartw/release/commit/5f285125b200f6667dfe2690d991061aa2969256))
 
 ### Features
 
