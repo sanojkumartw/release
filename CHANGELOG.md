@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.2.0 (2025-09-19)
+
+### Features
+
+- Handle null new in user service
+  ([`2c5ab6f`](https://github.com/sanojkumartw/release/commit/2c5ab6ffadc6dedfa14031e899be942c93824802))
+
+
 ## v0.1.1 (2025-09-19)
 
 ### Bug Fixes
