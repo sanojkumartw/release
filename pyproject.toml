@@ -22,9 +22,7 @@ create-data-product = "scripts.create_data_product:main"
 
 [tool.uv]
 package = true
-
-[dependency-groups]
-dev = [
+dev-dependencies = [
     "pytest>=7.0.0",
     "pre-commit>=4.3.0",
     "python-semantic-release>=10.4.0"
@@ -34,23 +32,6 @@ dev = [
 commit_parser = "conventional"
 version_toml = ["pyproject.toml:project.version"]
 allow_zero_version = true
-build_command = "uv build"
-dist_path = "dist"
-upload_to_vcs_release = true
-upload_to_pypi = false
-upload_to_release = true
-hvcs = "github"
-major_on_zero = false
-
-[tool.semantic_release.changelog]
-exclude_commit_patterns = [
-    "^(?i:release|bump|version)",
-    "^(?i:chore|docs|style|refactor|test|ci)",
-    "^(?i:merge|pull|revert)"
-]
 
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
-
-[tool.semantic_release.commit_parser_options]
-pattern = "^(?P<type>feat|fix|perf|refactor|style|docs|test|ci|build|chore|revert)(?:\\((?P<scope>[^()]+)\\))?(?P<breaking>!)?: (?P<description>[^\\n]+)"
