@@ -8,13 +8,13 @@ on:
 
 permissions:
   contents: write
-  id-token: write 
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     # Only run if there are commits that would trigger a release
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[no release]') }}
+    if: ${{ !contains(github.event.head_commit.message, '[no release]') }}
 
     steps:
       - name: Checkout repository
@@ -42,32 +42,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
-      - name: Validate commit messages
-        run: |
-          # Check if there are any conventional commits that would trigger a release
-          if ! git log --oneline --since="$(git describe --tags --abbrev=0 2>/dev/null || echo 'HEAD~10')" | grep -E "^(feat|fix|perf|refactor|docs|style|test|chore|ci|build|revert)(\(.+\))?!?: "; then
-            echo "No conventional commits found that would trigger a release"
-            echo "Skipping release workflow"
-            exit 0
-          fi
-
-      - name: Run pre-commit hooks
-        run: |
-          uv run pre-commit run --all-files || true
-
-      - name: Run tests
-        run: |
-          uv run pytest tests/ -v --tb=short
-
-      - name: Check if release is needed
-        id: check-release
-        run: |
-          # Use the version from pyproject.toml to ensure consistency
-          uvx --from="python-semantic-release@10.4.0" semantic-release version --dry-run
-          echo "release_needed=true" >> $GITHUB_OUTPUT
-
       - name: Create release
-        if: steps.check-release.outputs.release_needed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
